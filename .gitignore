@@ -1,0 +1,27 @@
+# --- Secretos -----------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- Material del curso -------------------------------------------------
+# Los .sql que entrega el instructor son material ajeno: se trabajan en local
+# pero no se publican. Los ejercicios propios van sueltos en ejercicios/.
+ejercicios/curso/
+
+# --- Datos y respaldos --------------------------------------------------
+backups/
+*.sql.gz
+*.tgz
+
+# --- Documentación interna (no versionada, por convención) --------------
+CLAUDE.md
+memory.md
+aprendizaje.md
+pasos*
+pendientes.md
+
+# --- Sistema ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/

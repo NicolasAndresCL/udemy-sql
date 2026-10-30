@@ -1,0 +1,53 @@
+# MySQL de práctica para el curso de SQL de Udemy.
+#
+# Para qué sirve: tener un servidor MySQL 8.4 desechable y siempre igual, al que
+# se entra SOLO por la consola `mysql` de dentro del contenedor:
+#
+#   docker compose exec mysql mysql -uroot -p
+#
+# No publica puertos en Windows a propósito (ver «Decisiones de diseño» en el
+# README). Los datos viven en el volumen `mysql_data`; los .sql del curso se
+# dejan en ./ejercicios y se cargan con `SOURCE /ejercicios/<archivo>.sql;`.
+
+# Nombre del proyecto: el contenedor queda como `udemy-sql-mysql-1` y el
+# volumen como `udemy-sql_mysql_data`. Sin `container_name` fijo, a propósito:
+# así scripts/smoke.sh puede levantar una copia aislada con `-p` sin chocar
+# con el contenedor de uso diario.
+name: udemy-sql
+
+services:
+  mysql:
+    # 8.4 es la rama LTS. Versión fijada: Dependabot avisa de la siguiente.
+    image: mysql:8.4.13
+    environment:
+      # `:?` hace que Compose falle con este mensaje si falta la variable, en
+      # vez de arrancar MySQL con una clave vacía.
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?define MYSQL_ROOT_PASSWORD en tu .env (copia .env.example)}
+      MYSQL_DATABASE: practica
+      MYSQL_USER: alumno
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?define MYSQL_PASSWORD en tu .env (copia .env.example)}
+      TZ: America/Santiago
+      # Sin esto el cliente `mysql` del contenedor arranca en locale POSIX,
+      # habla latin1 y guarda la ñ y los acentos corruptos (C383C2B1 en vez
+      # de C3B1). El servidor ya es utf8mb4: el problema es el cliente.
+      LANG: C.UTF-8
+    volumes:
+      # Volumen nombrado: I/O nativo de la VM de Docker Desktop. Sobrevive a
+      # `down`, se borra con `down -v`.
+      - mysql_data:/var/lib/mysql
+      # Bind mount: los .sql que se editan en Windows, visibles dentro.
+      - ./ejercicios:/ejercicios
+    healthcheck:
+      # `$$` deja que la variable la expanda el shell del contenedor, así la
+      # clave no queda escrita en la definición del healthcheck.
+      # 127.0.0.1 (TCP) y no localhost (socket): durante el primer arranque la
+      # imagen levanta un servidor temporal con --skip-networking que responde
+      # por socket; por TCP solo contesta el servidor definitivo.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  mysql_data:

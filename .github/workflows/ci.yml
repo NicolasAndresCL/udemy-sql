@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Permisos mínimos: este pipeline solo lee el código.
+permissions:
+  contents: read
+
+jobs:
+  # Segundos. Descarta los errores baratos antes de gastar minutos levantando
+  # MySQL.
+  lint:
+    name: Lint y configuración
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Sintaxis del compose
+        env:
+          MYSQL_ROOT_PASSWORD: x
+          MYSQL_PASSWORD: x
+        run: docker compose config --quiet
+
+      # La comprobación de la comprobación: el `:?` del compose debe impedir
+      # arrancar MySQL sin clave de root.
+      - name: El compose se niega a arrancar sin claves
+        run: |
+          if docker compose config --quiet >/dev/null 2>&1; then
+            echo '::error::El compose acepta arrancar sin MYSQL_ROOT_PASSWORD.'
+            exit 1
+          fi
+          echo 'Sin claves, config se niega, como debe ser.'
+
+      - name: Análisis estático de los scripts
+        run: |
+          docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable \
+            verificar.sh scripts/smoke.sh .githooks/pre-commit
+
+      - name: Lint de workflows
+        uses: docker://rhysd/actionlint:latest
+
+  secretos:
+    name: Sin secretos versionados
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Escaneo con gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Lo específico de este repo: que el .env con las claves reales y el
+      # material del curso sigan fuera de git.
+      - name: Los archivos sensibles siguen ignorados
+        run: |
+          fallos=0
+          for patron in '.env' '.env.local' 'ejercicios/curso/clase-01.sql' \
+                        'pendientes.md' 'memory.md' 'aprendizaje.md'; do
+            if ! git check-ignore -q "$patron"; then
+              echo "::error::'$patron' NO esta cubierto por .gitignore"
+              fallos=$((fallos + 1))
+            fi
+          done
+          if git check-ignore -q .env.example; then
+            echo '::error::.env.example quedo ignorado: el README lo manda a copiar.'
+            fallos=$((fallos + 1))
+          fi
+          [ "$fallos" -eq 0 ] || exit 1
+          echo 'Los patrones sensibles siguen ignorados.'
+
+  # Minutos. La prueba que importa: que MySQL ARRANQUE con esta configuración,
+  # se pueda usar por consola, guarde bien la ñ y no pierda datos.
+  smoke:
+    name: MySQL arranca, guarda UTF-8 y conserva los datos
+    runs-on: ubuntu-latest
+    needs: [lint, secretos]
+    steps:
+      - uses: actions/checkout@v7
+
+      # El mismo script que corre ./verificar.sh en local.
+      - name: Prueba de humo
+        run: bash scripts/smoke.sh

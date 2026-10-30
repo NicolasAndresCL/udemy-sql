@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Corre la verificación rápida (lint, sin levantar MySQL) solo si el commit
+# toca algo que el CI comprueba. Un commit de solo documentación no espera.
+#
+# Activar una vez por clon:  git config core.hooksPath .githooks
+set -euo pipefail
+
+if git diff --cached --name-only | grep -qE '(\.ya?ml|\.sh|^\.githooks/)'; then
+    echo 'pre-commit: verificacion rapida (./verificar.sh --rapido)'
+    ./verificar.sh --rapido
+fi

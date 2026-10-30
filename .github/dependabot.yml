@@ -1,0 +1,23 @@
+version: 2
+updates:
+  # Avisa cuando sale un parche de MySQL 8.4. Al estar la imagen fijada, la
+  # actualización llega como PR revisable (y pasa por el smoke) en vez de
+  # colarse en un `pull`.
+  #
+  # Es `docker-compose`, no `docker`: el ecosistema `docker` solo mira
+  # Dockerfiles y manifiestos de Kubernetes.
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(docker)"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(ci)"

@@ -1,0 +1,38 @@
+name: Reporte de fallo
+description: Algo no funciona como debería en el MySQL de práctica
+labels: [bug]
+body:
+  - type: textarea
+    id: que-pasa
+    attributes:
+      label: Qué ocurre
+      description: Qué esperabas y qué pasó en su lugar.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducir
+    attributes:
+      label: Cómo reproducirlo
+      placeholder: |
+        1. docker compose up -d --wait
+        2. docker compose exec mysql mysql -uroot -p
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: entorno
+    attributes:
+      label: Entorno
+      description: Salida de `docker compose version` y `docker compose ps`.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Salida de `docker compose logs --tail 100 mysql`. Revisa que no incluya claves.
+      render: shell
