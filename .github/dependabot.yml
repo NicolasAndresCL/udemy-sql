@@ -13,6 +13,15 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(docker)"
+    # Solo parches dentro de la rama 8.4 LTS (8.4.13 → 8.4.14). Un salto de
+    # rama (9.7 LTS, 26.7 Innovation…) es una decisión de curso y de datos, no
+    # un bump: el volumen de 8.4 no se actualiza directo a 26.x y el smoke lo
+    # rechaza por versión. Se ignoran los saltos mayores y menores.
+    ignore:
+      - dependency-name: mysql
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
 
   - package-ecosystem: github-actions
     directory: /

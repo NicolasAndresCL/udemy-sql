@@ -129,6 +129,9 @@ Para activar el hook en un clon nuevo: `git config core.hooksPath .githooks`.
   udemy-sql-verificar`, con volumen propio) sin tocar el contenedor ni los datos de uso diario.
 - **Versión fijada (`8.4.13`) y no `8.4` ni `latest`.** Un parche nuevo llega como PR de Dependabot y pasa por el
   smoke antes de usarse.
+- **Dependabot solo propone parches de 8.4.** Desde la `26.7`, MySQL numera por calendario y alterna versiones
+  Innovation y LTS. Sin el `ignore`, Dependabot propone `8.4.13 → 26.7.0` (Innovation, sin ruta de actualización
+  directa desde 8.4). Cambiar de rama es una decisión explícita: se cambia la imagen y la guardia del smoke a la vez.
 - **Material del curso fuera de git.** `ejercicios/curso/` está ignorado: los scripts del instructor son
   material ajeno.
 
