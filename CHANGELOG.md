@@ -7,6 +7,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+### Cambiado
+
+- Dependabot solo propone parches de la rama 8.4 LTS de MySQL. Ignora los saltos de rama, como el `26.7.0`
+  Innovation que propuso el PR #1: no es LTS y un volumen de 8.4 no se actualiza directo a esa versión.
+- El smoke explica qué rama esperaba cuando rechaza una versión.
+
 ## [0.1.0] — 2026-10-30
 
 ### Añadido

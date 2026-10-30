@@ -43,7 +43,9 @@ dc up -d --wait --wait-timeout 240 >/dev/null || falla 'MySQL no llegó a health
 ok 'contenedor healthy'
 
 version="$(sql_root -e 'SELECT VERSION();')"
-[[ "$version" == 8.4.* ]] || falla "versión inesperada: '$version'"
+# Guardia de rama: el curso y el volumen son 8.4 LTS. Un cambio de rama tiene
+# que ser una decisión explícita (cambiar también esta línea), no un bump.
+[[ "$version" == 8.4.* ]] || falla "versión inesperada: '$version' (se esperaba la rama 8.4 LTS)"
 ok "MySQL $version"
 
 echo '-- Usuarios creados por el primer arranque'
